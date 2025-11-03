@@ -717,12 +717,20 @@
     const pauseSound = new Audio('music/pause.mp3'); // 暂停音效
     const victorySound = new Audio('music/过关鼓掌.m4a'); // 胜利音效
     
-    // 背景音乐 - 每一关不同的音乐
+    // 背景音乐 - 每一关不同的音乐，提供多种格式以提高兼容性
     const backgroundMusic = {
-      level1: new Audio('music/bgm05.mp3'),   // 第一关：轻松愉快 (使用mp3格式)
-      level2: new Audio('music/bgm3.m4a'),    // 第二关：稍微紧张
-      level3: new Audio('music/bgm01_1.m4a')  // 第三关：欢快挑战
+      level1: new Audio('music/bgm05.mp3'),   // 第一关：轻松愉快 (使用mp3格式，兼容性最好)
+      level2: new Audio('music/bgm05.mp3'),   // 第二关：使用mp3格式作为备用
+      level3: new Audio('music/bgm05.mp3')    // 第三关：使用mp3格式作为备用
     };
+    
+    // 尝试加载原始音频文件，如果失败则使用备用
+    try {
+      backgroundMusic.level2 = new Audio('music/bgm3.m4a');
+      backgroundMusic.level3 = new Audio('music/bgm01_1.m4a');
+    } catch (error) {
+      console.log('部分音频文件格式不支持，使用备用音频:', error);
+    }
     
     // 设置背景音乐循环播放和音量
     Object.values(backgroundMusic).forEach(music => {
@@ -911,23 +919,33 @@
         
         currentBackgroundMusic.addEventListener('error', function(e) {
           console.log(`Error loading level ${level} music:`, e);
-          // 如果音频加载失败，尝试使用备用音频或静音模式
-          musicEnabled = false;
-          if (musicIcon) musicIcon.className = 'fa fa-volume-off text-white text-xl';
+          // 如果音频加载失败，不要禁用所有音乐，只是跳过这个文件
+          console.log('音频文件加载失败，但保持音乐功能开启');
         });
         
         try {
           currentBackgroundMusic.currentTime = 0;
-          // 使用Promise处理播放
+          
+          // 移动端特殊处理
+          if (isMobileDevice) {
+            // 移动端需要用户交互后才能播放，先不播放
+            console.log('移动端检测到，等待用户交互后播放背景音乐');
+            // 将音乐标记为待播放状态
+            currentBackgroundMusic.setAttribute('data-pending-play', 'true');
+            return;
+          }
+          
+          // 桌面端直接播放
           const playPromise = currentBackgroundMusic.play();
           if (playPromise !== undefined) {
             playPromise.then(() => {
               console.log(`Level ${level} music started playing`);
             }).catch(e => {
               console.log('Error playing background music:', e);
-              // 如果自动播放被阻止，显示提示
+              // 如果自动播放被阻止，标记为待播放
               if (e.name === 'NotAllowedError') {
-                console.log('音频自动播放被浏览器阻止，需要用户交互后才能播放');
+                console.log('音频自动播放被浏览器阻止，等待用户交互');
+                currentBackgroundMusic.setAttribute('data-pending-play', 'true');
               }
             });
           }
@@ -992,7 +1010,7 @@
           console.log('开始解锁移动端音频...');
           
           // 尝试播放所有音频文件的一小段来解锁
-          Object.values(backgroundMusic).forEach(music => {
+          Object.values(backgroundMusic).forEach((music, index) => {
             if (music.paused) {
               music.volume = 0; // 静音播放
               const playPromise = music.play();
@@ -1001,9 +1019,9 @@
                   music.pause();
                   music.currentTime = 0;
                   music.volume = 0.3; // 恢复正常音量
-                  console.log('背景音乐已解锁');
+                  console.log(`背景音乐 ${index + 1} 已解锁`);
                 }).catch(e => {
-                  console.log('背景音乐解锁失败:', e);
+                  console.log(`背景音乐 ${index + 1} 解锁失败:`, e);
                 });
               }
             }
@@ -1025,9 +1043,9 @@
                   } else {
                     sound.volume = 0.5;
                   }
-                  console.log(`音效 ${index} 已解锁`);
+                  console.log(`音效 ${index + 1} 已解锁`);
                 }).catch(e => {
-                  console.log(`音效 ${index} 解锁失败:`, e);
+                  console.log(`音效 ${index + 1} 解锁失败:`, e);
                 });
               }
             }
@@ -1035,6 +1053,18 @@
           
           mobileAudioUnlocked = true;
           console.log('移动端音频解锁完成');
+          
+          // 解锁后，如果有待播放的背景音乐，立即播放
+          if (currentBackgroundMusic && currentBackgroundMusic.getAttribute('data-pending-play') === 'true') {
+            currentBackgroundMusic.removeAttribute('data-pending-play');
+            if (musicEnabled) {
+              console.log('播放之前等待的背景音乐');
+              currentBackgroundMusic.play().catch(e => {
+                console.log('解锁后播放背景音乐失败:', e);
+              });
+            }
+          }
+          
         } catch (error) {
           console.log('移动端音频解锁过程出错:', error);
         }
@@ -1046,11 +1076,13 @@
         // 移除事件监听器，只需要执行一次
         document.removeEventListener('touchstart', firstInteraction);
         document.removeEventListener('click', firstInteraction);
+        document.removeEventListener('keydown', firstInteraction);
       };
       
       // 添加事件监听器
       document.addEventListener('touchstart', firstInteraction, { once: true });
       document.addEventListener('click', firstInteraction, { once: true });
+      document.addEventListener('keydown', firstInteraction, { once: true });
       
       // 返回解锁函数，供其他地方调用
       return unlockAudio;
@@ -1164,7 +1196,7 @@
       startGameButton.addEventListener('click', () => {
         // 移动端在用户点击开始游戏时立即尝试解锁音频
         if (isMobileDevice && !mobileAudioUnlocked) {
-          console.log('用户点击开始游戏，尝试解锁移动端音频');
+          console.log('用户点击开始游戏，立即解锁移动端音频');
           try {
             // 立即尝试解锁音频
             if (mobileAudioUnlocker) {
@@ -1178,7 +1210,11 @@
             console.log('开始游戏时音频解锁失败:', error);
           }
         }
-        startGame('easy');
+        
+        // 稍微延迟启动游戏，确保音频解锁有时间完成
+        setTimeout(() => {
+          startGame('easy');
+        }, isMobileDevice ? 200 : 0);
       });
       
       // 重启按钮事件
