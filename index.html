@@ -2,12 +2,16 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- Safari专用元标签 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <title>双11钱包保卫战</title>
   <!-- Tailwind CSS v3 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 移除外部 Font Awesome 依赖，改用内联 SVG 图标 -->
   
   <script>
     tailwind.config = {
@@ -66,34 +70,45 @@
         touch-action: none;
       }
       
-      /* 移动端优化 */
+      /* 移动端适配 - 统一版本 */
       @media (max-width: 768px) {
-        .game-container {
-          height: calc(100vh - 20px);
-          min-height: 600px;
+        html, body {
+          height: 100vh;
+          overflow-x: hidden;
+          margin: 0;
+          padding: 0;
         }
         
-        /* 移动端进一步优化间距 */
+        .game-container {
+          height: 100vh;
+          min-height: 500px;
+          position: relative;
+          overflow: hidden;
+          /* iOS Safari 安全区域适配 */
+          padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        
+        /* 微信浏览器适配 */
+        body.wechat-browser .game-container {
+          height: calc(100vh - 5px);
+          min-height: calc(100vh - 5px);
+        }
+        
+        /* Safari移动端适配 */
+        body.safari-mobile .game-container {
+          height: calc(100vh - 10px);
+          min-height: calc(100vh - 10px);
+        }
+        
+        /* 移动端按钮和界面元素优化 */
         .game-header {
           top: 5px;
           left: 5px;
           right: 5px;
           gap: 5px;
         }
-        
-        .progress-container {
-          top: clamp(50px, 6vh, 60px);
-          left: 5px;
-          right: 5px;
-        }
-        
-        /* 移动端按钮进一步缩小 */
-        .pause-button {
-          width: clamp(30px, 5vw, 40px) !important;
-          height: clamp(30px, 5vw, 40px) !important;
-          font-size: clamp(10px, 1.5vw, 14px) !important;
-        }
       }
+      
       .start-screen {
         position: absolute;
         top: 0;
@@ -517,7 +532,11 @@
         
         <!-- 开始按钮 -->
         <button id="startGameButton" class="btn btn-primary w-full">
-          <i class="fa fa-play-circle mr-2"></i> 开始游戏
+          <svg class="w-5 h-5 mr-2 inline-block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2"></circle>
+            <polygon points="10,8 10,16 16,12" fill="currentColor"></polygon>
+          </svg>
+          开始游戏
         </button>
         
         <p class="text-sm mt-4 text-gray-600">目标节省：500元（达到目标自动晋级）</p>
@@ -542,14 +561,22 @@
       
       <!-- 右侧：控制按钮 -->
       <div class="game-controls">
-        <!-- 音乐开关按钮 -->
+        <!-- 音乐开关按钮（使用可切换的内联 SVG） -->
         <div class="pause-button flower-button" id="musicButton">
-          <i class="fa fa-volume-up text-white" id="musicIcon"></i>
+          <span id="musicIcon" class="text-white" aria-hidden="true">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 10v4h4l5 4V6l-5 4H3z"></path>
+              <path d="M16 8c1.7 1.7 1.7 5.3 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+          </span>
         </div>
         
         <!-- 暂停按钮 -->
         <div class="pause-button flower-button" id="pauseButton">
-          <i class="fa fa-pause text-white"></i>
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="5" width="4" height="14"></rect>
+            <rect x="14" y="5" width="4" height="14"></rect>
+          </svg>
         </div>
       </div>
     </div>
@@ -601,13 +628,22 @@
         
         <div class="flex flex-col gap-4">
           <button class="btn btn-success" id="resumeButton">
-            <i class="fa fa-play mr-2"></i> 继续游戏
+            <svg class="w-5 h-5 mr-2 inline-block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="9,7 9,17 17,12"></polygon>
+            </svg>
+            继续游戏
           </button>
           <button class="btn btn-warning" id="pauseRestartButton">
-            <i class="fa fa-refresh mr-2"></i> 重新开始
+            <svg class="w-5 h-5 mr-2 inline-block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 6V3l-4 4 4 4V8c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5H5c0 3.9 3.1 7 7 7s7-3.1 7-7-3.1-7-7-7z"></path>
+            </svg>
+            重新开始
           </button>
           <button class="btn btn-primary" id="quitButton">
-            <i class="fa fa-home mr-2"></i> 返回主页
+            <svg class="w-5 h-5 mr-2 inline-block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4H9v4a2 2 0 0 1-2 2H3z"></path>
+            </svg>
+            返回主页
           </button>
         </div>
       </div>
@@ -628,7 +664,10 @@
         <p class="text-xl mb-6" id="scoreStatus">再接再厉!</p>
         
         <button class="btn btn-primary" id="restartButton">
-          <i class="fa fa-refresh mr-2"></i> 再来一次
+          <svg class="w-5 h-5 mr-2 inline-block" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 6V3l-4 4 4 4V8c2.8 0 5 2.2 5 5s-2.2 5-5 5-5-2.2-5-5H5c0 3.9 3.1 7 7 7s7-3.1 7-7-3.1-7-7-7z"></path>
+          </svg>
+          再来一次
         </button>
       </div>
     </div>
@@ -636,7 +675,7 @@
   </div>
 
   <!-- 版权信息 -->
-  <div class="fixed bottom-0 left-0 right-0 z-30 bg-gray-800 bg-opacity-90">
+  <div id="copyrightBar" class="fixed bottom-0 left-0 right-0 z-30 bg-gray-800 bg-opacity-90">
     <p class="text-white text-xs text-center py-2 px-4">
       © wise11.mumulife.net 版权所有
     </p>
@@ -718,24 +757,47 @@
     const victorySound = new Audio('music/过关鼓掌.m4a'); // 胜利音效
     
     // 背景音乐 - 每一关不同的音乐，提供多种格式以提高兼容性
-    const backgroundMusic = {
-      level1: new Audio('music/bgm05.mp3'),   // 第一关：轻松愉快 (使用mp3格式，兼容性最好)
-      level2: new Audio('music/bgm05.mp3'),   // 第二关：使用mp3格式作为备用
-      level3: new Audio('music/bgm05.mp3')    // 第三关：使用mp3格式作为备用
-    };
+    const backgroundMusic = {};
     
-    // 尝试加载原始音频文件，如果失败则使用备用
-    try {
-      backgroundMusic.level2 = new Audio('music/bgm3.m4a');
-      backgroundMusic.level3 = new Audio('music/bgm01_1.m4a');
-    } catch (error) {
-      console.log('部分音频文件格式不支持，使用备用音频:', error);
+    // 创建音频对象的辅助函数，避免重复加载
+    function createAudioWithFallback(primarySrc, fallbackSrc) {
+      try {
+        // 首先检测浏览器是否支持该格式
+        const audio = new Audio();
+        const canPlay = audio.canPlayType('audio/mp4') || audio.canPlayType('audio/m4a');
+        
+        if (canPlay && primarySrc.includes('.m4a')) {
+          return new Audio(primarySrc);
+        } else {
+          return new Audio(fallbackSrc);
+        }
+      } catch (error) {
+        console.log('音频创建失败，使用备用格式:', error);
+        return new Audio(fallbackSrc);
+      }
     }
+    
+    // 初始化背景音乐（禁用预加载，避免非当前曲目产生网络请求被中途终止的日志）
+    backgroundMusic.level1 = new Audio('music/bgm05.mp3');   // 第一关：轻松愉快 (使用mp3格式，兼容性最好)
+    backgroundMusic.level2 = createAudioWithFallback('music/bgm3.m4a', 'music/bgm05.mp3');   // 第二关
+    backgroundMusic.level3 = createAudioWithFallback('music/bgm01_1.m4a', 'music/bgm05.mp3'); // 第三关
+    // 禁止预加载，只有在真正播放时才发起网络请求
+    Object.values(backgroundMusic).forEach(music => { try { music.preload = 'none'; } catch(_){} });
     
     // 设置背景音乐循环播放和音量
     Object.values(backgroundMusic).forEach(music => {
       music.loop = true;
       music.volume = 0.3; // 设置较低音量，不干扰游戏音效
+      
+      // 添加错误处理，避免加载失败
+      music.addEventListener('error', (e) => {
+        console.log('背景音乐加载失败:', music.src, e);
+      });
+      
+      // 添加加载完成事件
+      music.addEventListener('canplaythrough', () => {
+        console.log('背景音乐加载完成:', music.src);
+      });
     });
     
     // 音乐控制状态
@@ -745,15 +807,42 @@
     // 性能优化设置
     let performanceMode = false; // 性能模式开关
     let isMobileDevice = false;  // 移动设备检测
+    let isSafari = false;        // Safari浏览器检测
     let lastFrameTime = 0;       // 上一帧时间
     let targetFPS = 60;          // 目标帧率
     let frameInterval = 1000 / targetFPS; // 帧间隔
     
-    // 检测移动设备
+    // 检测移动设备和浏览器类型
     function detectMobileDevice() {
       const userAgent = navigator.userAgent.toLowerCase();
       const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
       isMobileDevice = mobileKeywords.some(keyword => userAgent.includes(keyword));
+      
+      // 检测Safari浏览器（包括移动端Safari）
+      isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent) && !/chromium/.test(userAgent);
+      
+      // 检测微信浏览器
+      const isWechat = /micromessenger/.test(userAgent);
+      
+      console.log('设备检测结果:', {
+        isMobileDevice: isMobileDevice,
+        isSafari: isSafari,
+        isWechat: isWechat,
+        userAgent: userAgent
+      });
+      
+      // 为body添加相应的CSS类
+      if (isMobileDevice) {
+        document.body.classList.add('mobile-device');
+        
+        if (isWechat) {
+          document.body.classList.add('wechat-browser');
+          console.log('检测到微信浏览器');
+        } else if (isSafari) {
+          document.body.classList.add('safari-mobile');
+          console.log('检测到Safari移动端');
+        }
+      }
       
       // 移动设备保持与PC相同的帧率，确保游戏速度一致
       if (isMobileDevice) {
@@ -762,24 +851,95 @@
         frameInterval = 1000 / targetFPS;
         console.log('检测到移动设备，保持60FPS以确保游戏速度一致');
       }
+      
+      // 移动端优化处理
+      if (isMobileDevice) {
+        optimizeMobileExperience();
+      }
     }
     
-    // 图片资源
+    // 移动端体验优化 - 简化版本
+    function optimizeMobileExperience() {
+      console.log('启动移动端体验优化');
+      
+      // 阻止页面缩放（仅在必要时）
+      document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+      
+      // 阻止双击缩放（温和处理）
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, { passive: false });
+      
+      // 监听方向改变（简化处理）
+      window.addEventListener('orientationchange', function() {
+        setTimeout(() => {
+          if (typeof resizeCanvas === 'function') {
+            resizeCanvas();
+          }
+        }, 500); // 增加延迟，确保浏览器完成方向改变
+      });
+      
+      // 微信浏览器特殊处理
+      if (isWechat) {
+        console.log('应用微信浏览器特殊优化');
+        // 微信浏览器中避免过度的事件阻止
+        document.addEventListener('touchmove', function(event) {
+          // 只在游戏画布区域阻止滚动
+          if (event.target === canvas || canvas.contains(event.target)) {
+            event.preventDefault();
+          }
+        }, { passive: false });
+      }
+    }
+    
+    // 图片资源（为兼容Safari，先绑定事件再设置src）
     const backgroundImage = new Image();
+    backgroundImage.onload = imageLoaded;
+    backgroundImage.onerror = function() { console.log('Failed to load background image'); };
     backgroundImage.src = 'game_background.png'; // 可爱背景图
     
     const impulseImage = new Image();
+    impulseImage.onload = imageLoaded;
+    impulseImage.onerror = function() { console.log('Failed to load impulse image'); };
     impulseImage.src = 'cd.png'; // 本地 CD 图标替代恶魔图标
     
     const rationalImage = new Image();
+    rationalImage.onload = imageLoaded;
+    rationalImage.onerror = function() { console.log('Failed to load rational image'); };
     rationalImage.src = 'ts.png'; // 本地 TS 图标替代天使图标
     
     const coinImage = new Image();
+    coinImage.onload = imageLoaded;
+    coinImage.onerror = function() { console.log('Failed to load coin image'); };
     coinImage.src = 'jb.png'; // 本地金币图标
     
-    // 发射器图片
+    // 发射器图片（Safari兼容: 绑定事件→设置src→尝试decode）
     const launcherImage = new Image();
+    launcherImage.crossOrigin = 'anonymous';
+    launcherImage.onload = imageLoaded;
+    launcherImage.onerror = function(e) { console.log('Failed to load launcher image', e); };
     launcherImage.src = 'sj.png'; // 射击装置图标
+    try {
+      // 尝试明确解码，提升Safari渲染稳定性
+      if (launcherImage.decode) {
+        launcherImage.decode().then(() => {
+          console.log('Launcher image decoded successfully');
+        }).catch(err => {
+          console.log('Launcher image decode failed:', err);
+        });
+      }
+    } catch (e) {
+      console.log('Launcher image decode not supported:', e);
+    }
     
     // 图片加载完成标志
     let imagesLoaded = 0;
@@ -795,19 +955,7 @@
       }
     }
     
-    // 为每个图片添加加载完成事件
-    backgroundImage.onload = imageLoaded;
-    impulseImage.onload = imageLoaded;
-    rationalImage.onload = imageLoaded;
-    coinImage.onload = imageLoaded;
-    launcherImage.onload = imageLoaded;
-    
-    // 图片加载失败处理
-    backgroundImage.onerror = function() { console.log('Failed to load background image'); };
-    impulseImage.onerror = function() { console.log('Failed to load impulse image'); };
-    rationalImage.onerror = function() { console.log('Failed to load rational image'); };
-    coinImage.onerror = function() { console.log('Failed to load coin image'); };
-    launcherImage.onerror = function() { console.log('Failed to load launcher image'); };
+    // 事件已在创建阶段绑定（兼容Safari），此处不再重复绑定
     
     // 游戏状态
     let gameState = {
@@ -848,7 +996,7 @@
           console.log('游戏完成时音频解锁失败:', error);
         }
       }
-      
+
       // 播放胜利音效
       try {
         if (victorySound) {
@@ -893,6 +1041,14 @@
       } catch (error) {
         console.log('Error playing victory sound:', error);
       }
+
+      // 播放通关成功背景音乐（使用第一关的背景音乐作为庆祝音乐）
+      setTimeout(() => {
+        if (musicEnabled) {
+          console.log('播放通关成功背景音乐');
+          playBackgroundMusic(1); // 使用第一关的音乐作为庆祝音乐
+        }
+      }, 500); // 延迟500ms播放，让胜利音效先播放
       
       // 更新最终节省金额
       finalSavingsElement.textContent = gameState.score;
@@ -902,44 +1058,76 @@
     
     // 音乐控制函数
     function playBackgroundMusic(level) {
-      // 停止当前播放的音乐
-      stopBackgroundMusic();
-      
-      if (!musicEnabled) return;
+      if (!musicEnabled) {
+        console.log('音乐已禁用，跳过播放');
+        return;
+      }
       
       // 根据关卡选择音乐
       let musicKey = `level${level}`;
       if (backgroundMusic[musicKey]) {
-        currentBackgroundMusic = backgroundMusic[musicKey];
+        let targetMusic = backgroundMusic[musicKey];
         
-        // 添加音频加载事件监听
-        currentBackgroundMusic.addEventListener('canplaythrough', function() {
-          console.log(`Level ${level} music loaded successfully`);
-        });
+        // 防止重复播放：如果当前音乐已经在播放且是同一首，直接返回
+        if (currentBackgroundMusic === targetMusic && 
+            !currentBackgroundMusic.paused && 
+            currentBackgroundMusic.currentTime > 0) {
+          console.log(`Level ${level} music is already playing, skipping duplicate play`);
+          return;
+        }
         
-        currentBackgroundMusic.addEventListener('error', function(e) {
-          console.log(`Error loading level ${level} music:`, e);
-          // 如果音频加载失败，不要禁用所有音乐，只是跳过这个文件
-          console.log('音频文件加载失败，但保持音乐功能开启');
-        });
+        // 停止当前播放的音乐（强力停止所有音频）
+        console.log(`准备播放关卡 ${level} 的背景音乐`);
+        stopBackgroundMusic();
+        
+        currentBackgroundMusic = targetMusic;
+        
+        // 添加音频加载事件监听（只添加一次）
+        if (!currentBackgroundMusic.hasAttribute('data-listeners-added')) {
+          currentBackgroundMusic.addEventListener('canplaythrough', function() {
+            console.log(`Level ${level} music loaded successfully`);
+          });
+          
+          currentBackgroundMusic.addEventListener('error', function(e) {
+            console.log(`Error loading level ${level} music:`, e);
+            // 如果音频加载失败，不要禁用所有音乐，只是跳过这个文件
+            console.log('音频文件加载失败，但保持音乐功能开启');
+          });
+          
+          currentBackgroundMusic.setAttribute('data-listeners-added', 'true');
+        }
         
         try {
           currentBackgroundMusic.currentTime = 0;
           
           // 移动端特殊处理
           if (isMobileDevice) {
-            // 移动端需要用户交互后才能播放，先不播放
-            console.log('移动端检测到，等待用户交互后播放背景音乐');
-            // 将音乐标记为待播放状态
-            currentBackgroundMusic.setAttribute('data-pending-play', 'true');
+            // 如果音频已经解锁，直接播放
+            if (mobileAudioUnlocked) {
+              console.log(`移动端音频已解锁，直接播放关卡 ${level} 背景音乐`);
+              const playPromise = currentBackgroundMusic.play();
+              if (playPromise !== undefined) {
+                playPromise.then(() => {
+                  console.log(`Level ${level} music started playing on mobile`);
+                }).catch(e => {
+                  console.log('移动端背景音乐播放失败:', e);
+                });
+              }
+            } else {
+              // 移动端需要用户交互后才能播放，先不播放
+              console.log(`移动端检测到，标记关卡 ${level} 背景音乐为待播放状态`);
+              // 将音乐标记为待播放状态
+              currentBackgroundMusic.setAttribute('data-pending-play', 'true');
+            }
             return;
           }
           
           // 桌面端直接播放
+          console.log(`桌面端直接播放关卡 ${level} 背景音乐`);
           const playPromise = currentBackgroundMusic.play();
           if (playPromise !== undefined) {
             playPromise.then(() => {
-              console.log(`Level ${level} music started playing`);
+              console.log(`Level ${level} music started playing on desktop`);
             }).catch(e => {
               console.log('Error playing background music:', e);
               // 如果自动播放被阻止，标记为待播放
@@ -952,16 +1140,32 @@
         } catch (error) {
           console.log('Error playing background music:', error);
         }
+      } else {
+        console.log(`关卡 ${level} 的背景音乐不存在`);
       }
     }
     
     function stopBackgroundMusic() {
+      // 强力停止所有背景音乐，防止多个音频同时播放
+      Object.values(backgroundMusic).forEach(music => {
+        try {
+          if (!music.paused) {
+            music.pause();
+            music.currentTime = 0;
+            console.log('停止背景音乐:', music.src);
+          }
+        } catch (error) {
+          console.log('停止背景音乐时出错:', music.src, error);
+        }
+      });
+      
+      // 清除当前背景音乐引用
       if (currentBackgroundMusic) {
         try {
           currentBackgroundMusic.pause();
           currentBackgroundMusic.currentTime = 0;
         } catch (error) {
-          console.log('Error stopping background music:', error);
+          console.log('Error stopping current background music:', error);
         }
         currentBackgroundMusic = null;
       }
@@ -971,15 +1175,29 @@
       musicEnabled = !musicEnabled;
       
       if (musicEnabled) {
-        // 开启音乐
-        if (musicIcon) musicIcon.className = 'fa fa-volume-up text-white text-xl';
+        // 开启音乐：切换为音量开启图标
+        if (musicIcon) {
+          musicIcon.innerHTML = `
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 10v4h4l5 4V6l-5 4H3z"></path>
+              <path d="M16 8c1.7 1.7 1.7 5.3 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>`;
+        }
         // 如果游戏正在进行，播放对应关卡的音乐
         if (!gameState.gameOver && !gameState.paused) {
           playBackgroundMusic(gameState.level);
         }
       } else {
-        // 关闭音乐
-        if (musicIcon) musicIcon.className = 'fa fa-volume-off text-white text-xl';
+        // 关闭音乐：切换为静音图标
+        if (musicIcon) {
+          musicIcon.innerHTML = `
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 10v4h4l5 4V6l-5 4H3z"></path>
+              <path d="M16 8c1.7 1.7 1.7 5.3 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"></path>
+              <line x1="18" y1="6" x2="22" y2="10" stroke="currentColor" stroke-width="2"/>
+              <line x1="22" y1="6" x2="18" y2="10" stroke="currentColor" stroke-width="2"/>
+            </svg>`;
+        }
         stopBackgroundMusic();
       }
       
@@ -1009,26 +1227,24 @@
         try {
           console.log('开始解锁移动端音频...');
           
-          // 尝试播放所有音频文件的一小段来解锁
-          Object.values(backgroundMusic).forEach((music, index) => {
-            if (music.paused) {
-              music.volume = 0; // 静音播放
-              const playPromise = music.play();
-              if (playPromise !== undefined) {
-                playPromise.then(() => {
-                  music.pause();
-                  music.currentTime = 0;
-                  music.volume = 0.3; // 恢复正常音量
-                  console.log(`背景音乐 ${index + 1} 已解锁`);
-                }).catch(e => {
-                  console.log(`背景音乐 ${index + 1} 解锁失败:`, e);
-                });
-              }
+          // 使用一个短音效解锁音频上下文，避免同时触发多首背景音乐的网络请求
+          if (shootSound && shootSound.paused) {
+            shootSound.volume = 0; // 静音播放
+            const playPromise = shootSound.play();
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                shootSound.pause();
+                shootSound.currentTime = 0;
+                shootSound.volume = 0.5; // 恢复正常音量
+                console.log('短音效已用于解锁音频');
+              }).catch(e => {
+                console.log('短音效解锁失败:', e);
+              });
             }
-          });
+          }
           
-          // 解锁所有音效，包括胜利音效
-          const soundEffects = [victorySound, shootSound, hitImpulseSound, hitRationalSound, collectSound, levelUpSound, gameOverSound, pauseSound];
+          // 解锁所有音效，但排除游戏结束和胜利音效（避免在游戏开始时播放）
+          const soundEffects = [shootSound, hitImpulseSound, hitRationalSound, collectSound, levelUpSound, pauseSound];
           soundEffects.forEach((sound, index) => {
             if (sound && sound.paused) {
               sound.volume = 0;
@@ -1037,12 +1253,7 @@
                 playPromise.then(() => {
                   sound.pause();
                   sound.currentTime = 0;
-                  // 恢复正常音量
-                  if (sound === victorySound) {
-                    sound.volume = 0.7; // 胜利音效音量稍大
-                  } else {
-                    sound.volume = 0.5;
-                  }
+                  sound.volume = 0.5; // 恢复正常音量
                   console.log(`音效 ${index + 1} 已解锁`);
                 }).catch(e => {
                   console.log(`音效 ${index + 1} 解锁失败:`, e);
@@ -1051,18 +1262,37 @@
             }
           });
           
+          // 单独处理胜利音效和游戏结束音效，只设置音量不播放
+          if (victorySound) {
+            victorySound.volume = 0.7;
+            console.log('胜利音效已准备就绪');
+          }
+          if (gameOverSound) {
+            gameOverSound.volume = 0.5;
+            console.log('游戏结束音效已准备就绪');
+          }
+          
           mobileAudioUnlocked = true;
           console.log('移动端音频解锁完成');
           
-          // 解锁后，如果有待播放的背景音乐，立即播放
-          if (currentBackgroundMusic && currentBackgroundMusic.getAttribute('data-pending-play') === 'true') {
-            currentBackgroundMusic.removeAttribute('data-pending-play');
-            if (musicEnabled) {
-              console.log('播放之前等待的背景音乐');
-              currentBackgroundMusic.play().catch(e => {
-                console.log('解锁后播放背景音乐失败:', e);
-              });
-            }
+          // 不再批量触发背景音乐，保持干净的网络面板
+          
+          // 解锁后，处理背景音乐播放（确保只播放一个）
+          let shouldPlayMusic = false;
+          let targetLevel = gameState.level;
+          
+          // 检查游戏状态，决定是否需要播放背景音乐
+          if (musicEnabled && !gameState.gameOver && !gameState.paused) {
+            shouldPlayMusic = true;
+            console.log('游戏进行中，需要播放当前关卡背景音乐');
+          }
+          
+          // 统一播放逻辑，避免重复播放
+          if (shouldPlayMusic && musicEnabled) {
+            // 先停止所有背景音乐，然后播放指定关卡的音乐
+            stopBackgroundMusic();
+            console.log('音频解锁后，播放关卡', targetLevel, '的背景音乐');
+            playBackgroundMusic(targetLevel);
           }
           
         } catch (error) {
@@ -1115,6 +1345,14 @@
       console.log('返回主页');
       // 停止当前背景音乐
       stopBackgroundMusic();
+      
+      // 停止胜利音效（如果正在播放）
+      if (victorySound && !victorySound.paused) {
+        victorySound.pause();
+        victorySound.currentTime = 0;
+        console.log('停止胜利音效');
+      }
+      
       // 隐藏游戏结束弹窗
       gameCompletePopup.classList.add('hidden');
       // 隐藏游戏界面
@@ -1131,6 +1369,8 @@
       gameState.paused = false;
       // 重置游戏循环状态，确保下次可以正常启动游戏
       gameLoopRunning = false;
+      
+      console.log('已返回主界面，所有音频已停止');
     }
     
     // 初始化游戏
@@ -1180,7 +1420,17 @@
       
       // 设置玩家位置（在定义宽高之后）
       player.x = canvas.width / 2 - player.width / 2;
-      player.y = canvas.height - player.height - 30; // 增加底部边距
+      // 计算并夹取Y坐标，避免在Safari等设备上超出画布，并保持在版权条之上
+      {
+        const copyrightTop = getCopyrightTopInCanvas();
+        const bottomMargin = 30;
+        let desiredY = canvas.height - player.height - bottomMargin; // 基础底部边距
+        if (Number.isFinite(copyrightTop)) {
+          // 发射器底边不得低于版权条顶边
+          desiredY = Math.min(desiredY, Math.floor(copyrightTop - player.height - 4));
+        }
+        player.y = Math.max(0, Math.min(canvas.height - player.height, desiredY));
+      }
       
       // 添加事件监听器
       document.addEventListener('keydown', handleKeyDown);
@@ -1331,23 +1581,71 @@
       
       console.log('Game initialized successfully!');
     }
-    
+
+    // 计算版权条顶部在画布坐标系中的Y值
+    function getCopyrightTopInCanvas() {
+      try {
+        const bar = document.getElementById('copyrightBar');
+        if (!bar || !canvas) return Number.POSITIVE_INFINITY; // 不存在则不限制
+        const barRect = bar.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        // 将DOM像素坐标转换到画布坐标系（同单位，直接相减即可）
+        const topInCanvas = barRect.top - canvasRect.top;
+        return topInCanvas;
+      } catch (e) {
+        console.log('Failed to compute copyright top:', e);
+        return Number.POSITIVE_INFINITY;
+      }
+    }
+
     // 调整画布尺寸
     function resizeCanvas() {
       const container = document.querySelector('.game-container');
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
       
-      // 确保画布有足够的高度
-      if (canvas.height < 500) {
-        canvas.height = 500;
+      // 针对不同浏览器设置不同的最小高度
+      let minHeight = 500;
+      if (isSafari && isMobileDevice) {
+        // Safari移动端需要更大的最小高度，确保发射器可见
+        minHeight = 600;
+        console.log('Safari移动端：设置最小高度为', minHeight);
+      } else if (isMobileDevice) {
+        // 其他移动设备保持原有设置
+        minHeight = 500;
       }
       
-      // 更新玩家位置，确保发射器在屏幕底部可见
+      // 确保画布有足够的高度
+      if (canvas.height < minHeight) {
+        canvas.height = minHeight;
+        console.log('画布高度调整为最小高度:', minHeight);
+      }
+      
+      // 更新玩家位置，确保发射器在屏幕底部可见，且在版权条之上
       if (player) {
         player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-        // 增加底部边距，确保发射器完全可见
-        player.y = canvas.height - player.height - 30;
+        
+        // 针对不同浏览器设置不同的底部边距
+        let bottomMargin = 30; // 默认边距
+        if (isSafari && isMobileDevice) {
+          // Safari移动端适度底部边距，避免越界
+          bottomMargin = 50;
+          console.log('Safari移动端：设置底部边距为', bottomMargin);
+        } else if (isMobileDevice) {
+          // 其他移动设备
+          bottomMargin = 40;
+        }
+        
+        // 计算并夹取Y坐标，确保发射器可见且在版权条之上
+        {
+          const copyrightTop = getCopyrightTopInCanvas();
+          let desiredY = canvas.height - player.height - bottomMargin;
+          if (Number.isFinite(copyrightTop)) {
+            desiredY = Math.min(desiredY, Math.floor(copyrightTop - player.height - 4));
+          }
+          player.y = Math.max(0, Math.min(canvas.height - player.height, desiredY));
+        }
+        console.log('发射器位置更新:', { x: player.x, y: player.y, canvasHeight: canvas.height, bottomMargin: bottomMargin });
       }
     }
     
@@ -1360,17 +1658,12 @@
       
       // 初始化音频上下文（需要用户交互）
       try {
-        // 预加载音频文件
-        Object.values(backgroundMusic).forEach(music => {
-          music.load(); // 预加载音频
-        });
-        
         // 移动端音频启用处理
         if (isMobileDevice) {
           mobileAudioUnlocker = enableMobileAudio();
         }
       } catch (error) {
-        console.log('Error preloading audio:', error);
+        console.log('Error initializing audio:', error);
       }
       
       // 隐藏开始界面和暂停界面
@@ -1417,7 +1710,15 @@
       
       // 重置玩家位置
       player.x = canvas.width / 2 - player.width / 2;
-      player.y = canvas.height - player.height - 20;
+      // 启动关卡时设置Y坐标，确保在版权条之上
+      {
+        const copyrightTop = getCopyrightTopInCanvas();
+        let desiredY = canvas.height - player.height - 20;
+        if (Number.isFinite(copyrightTop)) {
+          desiredY = Math.min(desiredY, Math.floor(copyrightTop - player.height - 4));
+        }
+        player.y = Math.max(0, Math.min(canvas.height - player.height, desiredY));
+      }
       
       // 更新显示
       scoreDisplay.textContent = `节省: ${gameState.score}元`;
@@ -1827,7 +2128,7 @@
           }
         }
         
-        // 绘制第一关的出现对话文本
+        // 绘制出现对话文本（垂直居中文本）
         if (thought.showAppearText && thought.appearText) {
           ctx.save();
           ctx.font = 'bold 14px Arial';
@@ -1835,22 +2136,26 @@
           ctx.strokeStyle = '#FFFFFF';
           ctx.lineWidth = 2;
           ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
           
-          // 绘制文本背景
-          const textWidth = ctx.measureText(thought.appearText).width;
-          const textHeight = 20;
+          // 文本与背景框
+          const text = thought.appearText;
+          const textWidth = ctx.measureText(text).width;
+          const bgHeight = 20; // 背景高度固定，便于居中
           const bgX = thought.x + thought.width / 2 - textWidth / 2 - 5;
           const bgY = thought.y - 35;
+          const bgCenterY = bgY + bgHeight / 2;
           
+          // 背景与描边
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.fillRect(bgX, bgY, textWidth + 10, textHeight);
+          ctx.fillRect(bgX, bgY, textWidth + 10, bgHeight);
           ctx.strokeStyle = thought.type === 'impulse' ? '#FF6B9D' : '#7ED957';
           ctx.lineWidth = 2;
-          ctx.strokeRect(bgX, bgY, textWidth + 10, textHeight);
+          ctx.strokeRect(bgX, bgY, textWidth + 10, bgHeight);
           
-          // 绘制文本
+          // 居中文本
           ctx.fillStyle = thought.type === 'impulse' ? '#FF6B9D' : '#7ED957';
-          ctx.fillText(thought.appearText, thought.x + thought.width / 2, thought.y - 20);
+          ctx.fillText(text, thought.x + thought.width / 2, bgCenterY);
           
           ctx.restore();
         }
@@ -1954,38 +2259,53 @@
     
     // 绘制玩家（发射器）
     function drawPlayer() {
-      if (launcherImage.complete) {
+      // 在绘制前重置关键状态，避免Safari上被透明度、合成或变换影响
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+      if (typeof ctx.setTransform === 'function') {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
+
+      const px = Math.round(player.x);
+      const py = Math.round(player.y);
+      const pw = Math.round(player.width);
+      const ph = Math.round(player.height);
+
+      if (launcherImage.complete && launcherImage.naturalWidth > 0) {
         // 添加发射器发光效果
         ctx.shadowBlur = 20;
         ctx.shadowColor = 'rgba(255, 107, 157, 0.6)';
         
-        // 绘制发射器
-        ctx.drawImage(launcherImage, player.x, player.y, player.width, player.height);
+        // 绘制发射器（使用整数坐标，提升Safari渲染稳定性）
+        ctx.drawImage(launcherImage, px, py, pw, ph);
         
         // 重置阴影
         ctx.shadowBlur = 0;
       } else {
-        // 绘制发射器占位符
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        // 绘制发射器占位符（改为蓝色以便Safari可见）
+        ctx.fillStyle = 'rgba(86, 204, 242, 0.9)';
         ctx.beginPath();
-        ctx.moveTo(player.x + player.width / 2, player.y);
-        ctx.lineTo(player.x + player.width, player.y + player.height * 0.7);
-        ctx.lineTo(player.x + player.width * 0.8, player.y + player.height);
-        ctx.lineTo(player.x + player.width * 0.2, player.y + player.height);
-        ctx.lineTo(player.x, player.y + player.height * 0.7);
+        ctx.moveTo(px + pw / 2, py);
+        ctx.lineTo(px + pw, py + ph * 0.7);
+        ctx.lineTo(px + pw * 0.8, py + ph);
+        ctx.lineTo(px + pw * 0.2, py + ph);
+        ctx.lineTo(px, py + ph * 0.7);
         ctx.closePath();
         ctx.fill();
         
-        // 添加发射器细节
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        // 添加发射器细节高光
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
         ctx.beginPath();
-        ctx.moveTo(player.x + player.width / 2, player.y + player.height * 0.2);
-        ctx.lineTo(player.x + player.width * 0.7, player.y + player.height * 0.6);
-        ctx.lineTo(player.x + player.width * 0.5, player.y + player.height * 0.8);
-        ctx.lineTo(player.x + player.width * 0.3, player.y + player.height * 0.6);
+        ctx.moveTo(px + pw / 2, py + ph * 0.2);
+        ctx.lineTo(px + pw * 0.7, py + ph * 0.6);
+        ctx.lineTo(px + pw * 0.5, py + ph * 0.8);
+        ctx.lineTo(px + pw * 0.3, py + ph * 0.6);
         ctx.closePath();
         ctx.fill();
       }
+
+      ctx.restore();
     }
     
     // 生成消费念头
